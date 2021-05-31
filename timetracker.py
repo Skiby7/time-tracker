@@ -4,7 +4,7 @@ from sys import argv, exit
 import os
 import signal
 import re
-path = os.path.dirname(os.path.realpath(__file__))
+path = os.path.dirname(os.path.realpath(__file__)) + "/Projects"
 current_project = None
 
 class bcolors:
@@ -23,7 +23,8 @@ class bcolors:
 
 def signal_handler(sig, frame):
 	print('\n\nExiting...')
-	current_project.close()
+	if current_project is not None:
+		current_project.close()
 	exit(0)
    
 def print_history():
@@ -42,9 +43,7 @@ def open_project(name):
 	return f
 
 def list_projects():
-	list = os.listdir(path)
-	list.remove(__file__.split("/")[-1])
-	return list
+	return os.listdir(path)
 
 def print_timestamp():
 	print("[ "+ bcolors.BRIGHT_ORANGE + datetime.datetime.now().strftime("%d-%m-%Y %H:%M") + bcolors.ENDC + " ]", end=" ")
@@ -52,7 +51,11 @@ def print_timestamp():
 def main():
 	global current_project
 	signal.signal(signal.SIGINT, signal_handler)
-	os.chdir(path=path)
+	try:
+		os.chdir(path=path)
+	except FileNotFoundError:
+		os.mkdir(path=path)
+
 	print(bcolors.MAGENTA + "Welcome to TimeTrack!" + bcolors.ENDC)
 	projects = list_projects()
 	if not projects:
