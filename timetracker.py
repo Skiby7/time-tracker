@@ -5,6 +5,7 @@ import os
 import signal
 import re
 import enquiries
+import pyfiglet
 
 path = os.path.dirname(os.path.realpath(__file__)) + "/Projects"
 current_project = None
@@ -37,14 +38,25 @@ def print_history():
 	print()
 	current_project.seek(0)
 	for line in current_project.readlines():
-		if 'TODO' not in line:
+		if 'TODO' not in line and 'DONE' not in line:
 			print(line);
+	input(bcolors.BOLD + 'Press enter to continue' + bcolors.ENDC)
+	print(bcolors.CLEAR)
+
+def print_done():
+	global current_project
+	print()
+	current_project.seek(0)
+	for line in current_project.readlines():
+		if 'DONE' in line:
+			print(line)
 	input(bcolors.BOLD + 'Press enter to continue' + bcolors.ENDC)
 	print(bcolors.CLEAR)
 	
 def print_todo():
 	global current_project
-	print()
+	print(bcolors.MAGENTA)
+	print(pyfiglet.figlet_format("TimeTrack") + bcolors.ENDC)
 	current_project.seek(0)
 	for line in current_project.readlines():
 		if 'TODO'  in line:
@@ -86,6 +98,8 @@ def rm_todo():
 	for line in lines:
 		if line == choice:
 			lines.remove(line)
+			line = re.sub("\[[^\]]+?\]", '', line)
+			lines.append('[ ' + bcolors.CYAN + 'DONE' + bcolors.ENDC + ' ]' + line)
 	current_project.close()
 	current_project = open(path + "/" + pj_name, "w")
 	for line in lines:
@@ -106,7 +120,8 @@ def main():
 	except FileNotFoundError:
 		os.mkdir(path=path)
 
-	print(bcolors.MAGENTA + "Welcome to TimeTrack!" + bcolors.ENDC)
+	print(bcolors.MAGENTA + "Welcome to ")
+	print(pyfiglet.figlet_format("TimeTrack") + bcolors.ENDC)
 	projects = list_projects()
 	if not projects:
 		new_project = input(bcolors.RED + "No projects available, insert new one: " + bcolors.ENDC)
@@ -130,6 +145,9 @@ def main():
 			continue
 		if input_ == "/done":
 			rm_todo()
+			continue
+		if input_ == "/dhist":
+			print_done()
 			continue
 		if input_ == "/hist":
 			print_history()
