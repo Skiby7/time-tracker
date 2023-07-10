@@ -9,9 +9,6 @@ import enquiries
 import pyfiglet
 import readline
 
-path = os.path.dirname(os.path.realpath(__file__)) + "/Projects"
-current_project = None
-editing = False
 class bcolors:
 	MAGENTA = '\033[95m'
 	BLUE = '\033[94m'
@@ -26,6 +23,27 @@ class bcolors:
 	ITALIC = '\033[3m'
 	UNDERLINE = '\033[4m'
 	CLEAR = '\033[2J\033[H'
+
+path = os.path.dirname(os.path.realpath(__file__)) + "/Projects"
+current_project = None
+editing = False
+quiet = False
+if len(argv) > 1 and "-q" in argv:
+	quiet = True
+if len(argv) > 1 and ("-h" in argv or "--help" in argv):
+	print(f"Use {bcolors.ITALIC}-q{bcolors.ENDC} option to disable the help message while the program is running")
+	help_msg = f""" {bcolors.CYAN}{bcolors.ITALIC}text{bcolors.ENDC} -> add annotation by simply writing the message and pressing enter
+ {bcolors.CYAN}/todo{bcolors.ENDC} {bcolors.ITALIC}text{bcolors.ENDC} -> add todo
+ {bcolors.CYAN}/done{bcolors.ENDC} -> mark todo as done
+ {bcolors.CYAN}/dhist{bcolors.ENDC} -> print completed todos
+ {bcolors.CYAN}/edit{bcolors.ENDC} -> edit todo
+ {bcolors.CYAN}/chpro{bcolors.ENDC} -> change project
+ {bcolors.CYAN}/delpro{bcolors.ENDC} -> delete project
+ {bcolors.CYAN}/hist{bcolors.ENDC} -> print annotations
+ {bcolors.CYAN}/exit{bcolors.ENDC}
+	"""
+	print(help_msg)
+	exit(0)
 
 
 def signal_handler(sig, frame):
@@ -70,7 +88,8 @@ def print_todo():
  {bcolors.CYAN}/hist{bcolors.ENDC} -> print annotations
  {bcolors.CYAN}/exit{bcolors.ENDC}
 	"""
-	print(help_msg)
+	if not quiet:
+		print(help_msg)
 	current_project.seek(0)
 	for line in current_project.readlines():
 		if 'TODO'  in line:
