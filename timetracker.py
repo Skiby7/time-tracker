@@ -112,7 +112,7 @@ def add_line(project, line):
 		line = "[ "+ bcolors.GREEN + "TODO" + bcolors.ENDC + " ] " + line + "\n"
 		project.write(line)
 
-	elif line != "":
+	elif line != "" and line[0] != "/":
 		line = "[ "+ bcolors.YELLOW + datetime.datetime.now().strftime("%d-%m-%Y %H:%M") + bcolors.ENDC + " ] " + line + "\n"
 		project.write(line)
 
@@ -223,16 +223,17 @@ def main():
 	cmd_file = os.path.join(os.path.expanduser("~"), ".tracktime_cmd")
 	with open(cmd_file, "w") as f:
 		cmd = f"""/exit
-/hist 
-/delpro 
-/chpro 
-/edit 
-/dhist 
-/done 
+/hist
+/delpro
+/chpro
+/edit
+/dhist
+/done
 /todo 
 """
 		f.write(cmd)
 	readline.read_history_file(cmd_file)
+	readline.set_auto_history(False)
 	signal.signal(signal.SIGINT, signal_handler)
 	print(bcolors.CLEAR)
 	try:
@@ -250,7 +251,7 @@ def main():
 	print(bcolors.CLEAR, end="")
 	while True:
 		print_todo()
-		input_ = input(bcolors.CYAN + current_project.name + "> " + bcolors.ENDC)
+		input_ = input(bcolors.CYAN + current_project.name + "> " + bcolors.ENDC).strip()
 		print(bcolors.CLEAR, end='')
 		if input_ == "/exit":
 			current_project.close()
