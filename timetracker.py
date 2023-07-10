@@ -1,15 +1,17 @@
 import time
 import datetime
 from sys import argv, exit
+import sys
 import os
 import signal
 import re
 import enquiries
 import pyfiglet
+import readline
 
 path = os.path.dirname(os.path.realpath(__file__)) + "/Projects"
 current_project = None
-removing = False
+editing = False
 class bcolors:
 	MAGENTA = '\033[95m'
 	BLUE = '\033[94m'
@@ -26,8 +28,8 @@ class bcolors:
 
 
 def signal_handler(sig, frame):
-	global removing
-	if not removing:
+	global editing
+	if not editing:
 		print('\n\nExiting...')
 		if current_project is not None:
 			current_project.close()
@@ -72,29 +74,34 @@ def list_projects():
 
 
 def add_line(project, line):
-	if "/todo" in line:
+	if "/todo" in line and line.strip() != "/todo":
 		line = re.sub('/todo', '', line)
 		line = "[ "+ bcolors.GREEN + "TODO" + bcolors.ENDC + " ] " + line + "\n"
 		project.write(line)
 
-	else:
+	elif line != "":
 		line = "[ "+ bcolors.YELLOW + datetime.datetime.now().strftime("%d-%m-%Y %H:%M") + bcolors.ENDC + " ] " + line + "\n"
 		project.write(line)
 
 def rm_todo():
-	global current_project, removing, path
+	global current_project, editing, path
 	pj_name = current_project.name
-	removing = True
+	editing = True
 	current_project.seek(0)
 	lines = current_project.readlines()
 	todos = []
 	for line in lines:
 		if "TODO" in line:
 			todos.append(line)
-	if not todos:
+	todos.append("Cancel")
+	if len(todos) == 1:
 		print(bcolors.GREEN + "Nothing to do! Take a nap!" + bcolors.ENDC)
+		input("Press enter to continue")
 		return
 	choice = enquiries.choose('Select todo:', todos)
+	if choice == "Cancel":
+		editing = False
+		return
 	for line in lines:
 		if line == choice:
 			lines.remove(line)
@@ -104,11 +111,56 @@ def rm_todo():
 	current_project = open(path + "/" + pj_name, "w")
 	for line in lines:
 		current_project.write(line)
-	current_project.close
+	current_project.close()
 	current_project = open_project(pj_name)
-	removing = False
-		
+	editing = False
 
+def edit_todo():
+	global current_project, editing, path
+	pj_name = current_project.name
+	editing = True
+	current_project.seek(0)
+	lines = current_project.readlines()
+	todos = []
+	for line in lines:
+		if "TODO" in line:
+			todos.append(line)
+	todos.append("Cancel")
+	if len(todos) == 1:
+		print(bcolors.GREEN + "Nothing to do! Take a nap!" + bcolors.ENDC)
+		input("Press enter to continue")
+		return
+	choice = enquiries.choose('Select todo:', todos)
+	if choice == "Cancel":
+		editing = False
+		return
+	for line in lines:
+		if line == choice:
+			print(f"{line}\n{bcolors.GREEN}Edit todo ->{bcolors.ENDC}", end=" ")
+			edited = input()
+			lines[lines.index(line)] = "[ "+ bcolors.GREEN + "TODO" + bcolors.ENDC + " ] " + edited + "\n"
+	current_project.close()
+	current_project = open(path + "/" + pj_name, "w")
+	for line in lines:
+		current_project.write(line)
+	current_project.close()
+	current_project = open_project(pj_name)
+	editing = False
+
+def choose_project():
+	global current_project
+	lines = list_projects()
+	prjs = []
+	for line in lines:
+		prjs.append(line)
+	prjs.append("Create new project")
+	prjs.append("Exit")
+	choice = enquiries.choose('Select project:', prjs)
+	if choice == "Exit":
+		exit(0)
+	elif choice == "Create new project":
+		choice = input(bcolors.GREEN + "Project name: " + bcolors.ENDC)
+	current_project = open_project(choice)
 
 def main():
 	global current_project, window
@@ -127,9 +179,7 @@ def main():
 		new_project = input(bcolors.RED + "No projects available, insert new one: " + bcolors.ENDC)
 		current_project = open_project(new_project)
 	else:
-		str_ = " "
-		to_open = input(bcolors.GREEN + "Choose project to open or create a new one -> [" + str_.join([str(elem) for elem in list_projects()]) + "]: " + bcolors.ENDC)
-		current_project = open_project(to_open)
+		choose_project()
 	while True:
 		print_todo()
 		input_ = input(bcolors.CYAN + current_project.name + "> " + bcolors.ENDC)
@@ -139,12 +189,13 @@ def main():
 			break
 		if input_ == "/chpro":
 			current_project.close()
-			str_ = " "
-			to_open = input(bcolors.GREEN + "Choose project to open or create a new one -> [" + str_.join([str(elem) for elem in list_projects()]) + "]: " + bcolors.ENDC)
-			current_project = open_project(to_open)
+			choose_project()
 			continue
 		if input_ == "/done":
 			rm_todo()
+			continue
+		if input_ == "/edit":
+			edit_todo()
 			continue
 		if input_ == "/dhist":
 			print_done()
@@ -156,5 +207,5 @@ def main():
 		
 
 if __name__ == "__main__":
-    main()
+	main()
 	
