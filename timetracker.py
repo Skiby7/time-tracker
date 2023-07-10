@@ -206,7 +206,6 @@ def main():
 		os.chdir(path=path)
 	except FileNotFoundError:
 		os.mkdir(path=path)
-
 	print(bcolors.MAGENTA + "Welcome to ")
 	print(pyfiglet.figlet_format("TimeTrack") + bcolors.ENDC)
 	projects = list_projects()
