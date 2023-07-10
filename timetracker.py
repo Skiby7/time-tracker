@@ -60,13 +60,13 @@ def print_todo():
 	global current_project
 	print(bcolors.MAGENTA)
 	print(pyfiglet.figlet_format("TimeTrack") + bcolors.ENDC)
-	help_msg = f""" {bcolors.CYAN}/todo{bcolors.ENDC} {bcolors.ITALIC}text{bcolors.ENDC} -> add todo
+	help_msg = f""" {bcolors.CYAN}{bcolors.ITALIC}text{bcolors.ENDC} -> add annotation by simply writing the message and pressing enter
+ {bcolors.CYAN}/todo{bcolors.ENDC} {bcolors.ITALIC}text{bcolors.ENDC} -> add todo
  {bcolors.CYAN}/done{bcolors.ENDC} -> mark todo as done
  {bcolors.CYAN}/dhist{bcolors.ENDC} -> print completed todos
  {bcolors.CYAN}/edit{bcolors.ENDC} -> edit todo
  {bcolors.CYAN}/chpro{bcolors.ENDC} -> change project
  {bcolors.CYAN}/delpro{bcolors.ENDC} -> delete project
- {bcolors.CYAN}{bcolors.ITALIC}text{bcolors.ENDC} -> add annotation by simply writing the message and pressing enter
  {bcolors.CYAN}/hist{bcolors.ENDC} -> print annotations
  {bcolors.CYAN}/exit{bcolors.ENDC}
 	"""
