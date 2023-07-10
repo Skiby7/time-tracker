@@ -23,6 +23,7 @@ class bcolors:
 	DARK_ORANGE = '\033[38:5:166:0m'
 	ENDC = '\033[0m'
 	BOLD = '\033[1m'
+	ITALIC = '\033[3m'
 	UNDERLINE = '\033[4m'
 	CLEAR = '\033[2J\033[H'
 
@@ -59,6 +60,17 @@ def print_todo():
 	global current_project
 	print(bcolors.MAGENTA)
 	print(pyfiglet.figlet_format("TimeTrack") + bcolors.ENDC)
+	help_msg = f""" {bcolors.CYAN}/todo{bcolors.ENDC} {bcolors.ITALIC}text{bcolors.ENDC} -> add todo
+ {bcolors.CYAN}/done{bcolors.ENDC} -> mark todo as done
+ {bcolors.CYAN}/dhist{bcolors.ENDC} -> print completed todos
+ {bcolors.CYAN}/edit{bcolors.ENDC} -> edit todo
+ {bcolors.CYAN}/chpro{bcolors.ENDC} -> change project
+ {bcolors.CYAN}/delpro{bcolors.ENDC} -> delete project
+ {bcolors.CYAN}{bcolors.ITALIC}text{bcolors.ENDC} -> add annotation by simply writing the message and pressing enter
+ {bcolors.CYAN}/hist{bcolors.ENDC} -> print annotations
+ {bcolors.CYAN}/exit{bcolors.ENDC}
+	"""
+	print(help_msg)
 	current_project.seek(0)
 	for line in current_project.readlines():
 		if 'TODO'  in line:
@@ -147,6 +159,29 @@ def edit_todo():
 	current_project = open_project(pj_name)
 	editing = False
 
+def del_project():
+	global current_project
+	lines = list_projects()
+	prjs = []
+	for line in lines:
+		prjs.append(line)
+	prjs.append("Cancel")
+	choice = enquiries.choose('Select project to delete:', prjs)
+	if choice == "Cancel":
+		choose_project()
+		return
+	else:
+		print(f"{bcolors.RED}ARE YOU SURE TO DELETE {choice}? [y/n]{bcolors.ENDC}", end=" ")
+		confirm = input()
+		if confirm == "y":
+			current_project.close()
+			os.remove(path + "/" + choice)
+			print(f"{bcolors.GREEN}Project deleted!{bcolors.ENDC}")
+
+		else:
+			print(f"{bcolors.YELLOW}Project not deleted!{bcolors.ENDC}")
+	choose_project()
+
 def choose_project():
 	global current_project
 	lines = list_projects()
@@ -180,6 +215,7 @@ def main():
 		current_project = open_project(new_project)
 	else:
 		choose_project()
+	print(bcolors.CLEAR, end="")
 	while True:
 		print_todo()
 		input_ = input(bcolors.CYAN + current_project.name + "> " + bcolors.ENDC)
@@ -190,6 +226,10 @@ def main():
 		if input_ == "/chpro":
 			current_project.close()
 			choose_project()
+			continue
+		if input_ == "/delpro":
+			current_project.close()
+			del_project()
 			continue
 		if input_ == "/done":
 			rm_todo()
