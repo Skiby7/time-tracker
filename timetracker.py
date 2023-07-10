@@ -8,6 +8,7 @@ import re
 import enquiries
 import pyfiglet
 import readline
+import atexit
 
 class bcolors:
 	MAGENTA = '\033[95m'
@@ -32,6 +33,7 @@ if len(argv) > 1 and "-q" in argv:
 	quiet = True
 if len(argv) > 1 and ("-h" in argv or "--help" in argv):
 	print(f"Use {bcolors.ITALIC}-q{bcolors.ENDC} option to disable the help message while the program is running")
+	print(f"Use up/down keys to scroll through commands")
 	help_msg = f""" {bcolors.CYAN}{bcolors.ITALIC}text{bcolors.ENDC} -> add annotation by simply writing the message and pressing enter
  {bcolors.CYAN}/todo{bcolors.ENDC} {bcolors.ITALIC}text{bcolors.ENDC} -> add todo
  {bcolors.CYAN}/done{bcolors.ENDC} -> mark todo as done
@@ -218,7 +220,19 @@ def choose_project():
 
 def main():
 	global current_project, window
-	
+	cmd_file = os.path.join(os.path.expanduser("~"), ".tracktime_cmd")
+	with open(cmd_file, "w") as f:
+		cmd = f"""/exit
+/hist 
+/delpro 
+/chpro 
+/edit 
+/dhist 
+/done 
+/todo 
+"""
+		f.write(cmd)
+	readline.read_history_file(cmd_file)
 	signal.signal(signal.SIGINT, signal_handler)
 	print(bcolors.CLEAR)
 	try:
