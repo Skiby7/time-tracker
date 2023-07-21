@@ -108,7 +108,7 @@ def list_projects():
 
 def add_line(project, line):
 	if "/todo" in line and line.strip() != "/todo":
-		line = re.sub('/todo', '', line)
+		line = re.sub('/todo ', '', line)
 		line = "[ "+ bcolors.GREEN + "TODO" + bcolors.ENDC + " ] " + line + "\n"
 		project.write(line)
 
