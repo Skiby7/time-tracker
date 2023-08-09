@@ -76,7 +76,7 @@ def print_done():
 	input(bcolors.BOLD + 'Press enter to continue' + bcolors.ENDC)
 	print(bcolors.CLEAR)
 	
-def print_todo():
+def print_screen():
 	global current_project
 	print(bcolors.MAGENTA)
 	print(pyfiglet.figlet_format("TimeTrack") + bcolors.ENDC)
@@ -94,8 +94,30 @@ def print_todo():
 		print(help_msg)
 	current_project.seek(0)
 	for line in current_project.readlines():
-		if 'TODO'  in line:
-			print(line);
+		if 'TODO' in line or 'DONE' in line:
+			print(line)
+
+def print_todo():
+	global current_project
+	print(bcolors.MAGENTA)
+	print(pyfiglet.figlet_format("TimeTrack") + bcolors.ENDC)
+	help_msg = f""" {bcolors.CYAN}{bcolors.ITALIC}text{bcolors.ENDC} -> add annotation by simply writing the message and pressing enter
+ {bcolors.CYAN}/todo{bcolors.ENDC} {bcolors.ITALIC}text{bcolors.ENDC} -> add todo
+ {bcolors.CYAN}/done{bcolors.ENDC} -> mark todo as done
+ {bcolors.CYAN}/rm{bcolors.ENDC} -> remove element from the project
+ {bcolors.CYAN}/dhist{bcolors.ENDC} -> print completed todos
+ {bcolors.CYAN}/edit{bcolors.ENDC} -> edit todo
+ {bcolors.CYAN}/chpro{bcolors.ENDC} -> change project
+ {bcolors.CYAN}/delpro{bcolors.ENDC} -> delete project
+ {bcolors.CYAN}/hist{bcolors.ENDC} -> print annotations
+ {bcolors.CYAN}/exit{bcolors.ENDC}
+	"""
+	if not quiet:
+		print(help_msg)
+	current_project.seek(0)
+	for line in current_project.readlines():
+		if 'TODO' in line:
+			print(line)
 
 def open_project(name):
 	f = open(name, "a+")
@@ -116,7 +138,7 @@ def add_line(project, line):
 		line = "[ "+ bcolors.YELLOW + datetime.datetime.now().strftime("%d-%m-%Y %H:%M") + bcolors.ENDC + " ] " + line + "\n"
 		project.write(line)
 
-def rm_todo():
+def done_todo():
 	global current_project, editing, path
 	pj_name = current_project.name
 	editing = True
@@ -137,9 +159,38 @@ def rm_todo():
 		return
 	for line in lines:
 		if line == choice:
-			lines.remove(line)
+			index = lines.index(line)
 			line = re.sub("\[[^\]]+?\]", '', line)
-			lines.append('[ ' + bcolors.CYAN + 'DONE' + bcolors.ENDC + ' ]' + line)
+			lines[index] = '[ ' + bcolors.CYAN + 'DONE' + bcolors.ENDC + ' ]' + line
+	current_project.close()
+	current_project = open(path + "/" + pj_name, "w")
+	for line in lines:
+		current_project.write(line)
+	current_project.close()
+	current_project = open_project(pj_name)
+	editing = False
+
+def rm_todo():
+	global current_project, editing, path
+	pj_name = current_project.name
+	editing = True
+	current_project.seek(0)
+	lines = current_project.readlines()
+	items = []
+	for line in lines:
+		items.append(line)
+	items.append("Cancel")
+	if len(items) == 1:
+		print(bcolors.GREEN + "Nothing to do! Take a nap!" + bcolors.ENDC)
+		input("Press enter to continue")
+		return
+	choice = enquiries.choose('Select item:', items)
+	if choice == "Cancel":
+		editing = False
+		return
+	for line in lines:
+		if line == choice:
+			lines.remove(line)
 	current_project.close()
 	current_project = open(path + "/" + pj_name, "w")
 	for line in lines:
@@ -171,7 +222,7 @@ def edit_todo():
 		if line == choice:
 			print(f"{line}\n{bcolors.GREEN}Edit todo ->{bcolors.ENDC}", end=" ")
 			edited = input()
-			lines[lines.index(line)] = "[ "+ bcolors.GREEN + "TODO" + bcolors.ENDC + " ] " + edited + "\n"
+			lines[lines.index(line)] = "[ "+ bcolors.GREEN + "TODO" + bcolors.ENDC + " ]  " + edited + "\n"
 	current_project.close()
 	current_project = open(path + "/" + pj_name, "w")
 	for line in lines:
@@ -228,6 +279,7 @@ def main():
 /chpro
 /edit
 /dhist
+/rm
 /done
 /todo 
 """
@@ -250,7 +302,7 @@ def main():
 		choose_project()
 	print(bcolors.CLEAR, end="")
 	while True:
-		print_todo()
+		print_screen()
 		input_ = input(bcolors.CYAN + current_project.name + "> " + bcolors.ENDC).strip()
 		print(bcolors.CLEAR, end='')
 		if input_ == "/exit":
@@ -265,6 +317,9 @@ def main():
 			del_project()
 			continue
 		if input_ == "/done":
+			done_todo()
+			continue
+		if input_ == "/rm":
 			rm_todo()
 			continue
 		if input_ == "/edit":
