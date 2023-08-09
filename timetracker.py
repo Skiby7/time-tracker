@@ -90,12 +90,23 @@ def print_screen():
  {bcolors.CYAN}/hist{bcolors.ENDC} -> print annotations
  {bcolors.CYAN}/exit{bcolors.ENDC}
 	"""
+	todo_count = 0
+	done_count = 0
+	todo_encountered = False
 	if not quiet:
 		print(help_msg)
 	current_project.seek(0)
 	for line in current_project.readlines():
-		if 'TODO' in line or 'DONE' in line:
+		if 'TODO' in line:
+			todo_count += 1
+			todo_encountered = True
 			print(line)
+			
+		elif 'DONE' in line:
+			done_count += 1
+			if todo_encountered:
+				print(line)
+	print(f"-> {done_count}/{done_count+todo_count} tasks completed!")
 
 def print_todo():
 	global current_project
@@ -125,8 +136,6 @@ def open_project(name):
 
 def list_projects():
 	return os.listdir(path)
-
-
 
 def add_line(project, line):
 	if "/todo" in line and line.strip() != "/todo":
